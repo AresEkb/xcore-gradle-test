@@ -1,0 +1,13 @@
+@Ecore(
+    nsURI='http://example.com/test',
+    nsPrefix='test')
+@GenModel(
+    modelName='Test',
+    prefix='Test',
+    modelDirectory='xcore-test/target/generated-sources/xcore')
+package test
+
+class ClassA {
+    String name
+    String description
+}

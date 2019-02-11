@@ -1,0 +1,78 @@
+plugins {
+    id "org.xtext.builder" version "2.0.3"
+}
+
+repositories {
+    jcenter()
+}
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+
+ext {
+    xtextVersion = '2.16.0'
+}
+
+sourceSets {
+    main {
+        resources {
+            exclude '**/*.xcore'
+        }
+    }
+}
+
+xtext {
+    version = "${xtextVersion}"
+    languages {
+        ecore {
+            setup = 'org.eclipse.xtext.ecore.EcoreSupport'
+        }
+        //codegen {
+        //    setup = 'org.eclipse.emf.codegen.ecore.xtext.GenModelSupport'
+        //}
+        xcore {
+            setup = 'org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup'
+            generator.outlet.producesJava = true
+        }
+    }
+    sourceSets {
+        main {
+            srcDir 'src/main'
+            output {
+                dir(xtext.languages.xcore.generator.outlet, 'target/generated-sources/xcore')
+            }
+        }
+    }
+}
+
+dependencies {
+    compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
+    compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
+    compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:+'
+
+    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.ecore.xcore:+'
+    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:+'
+    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen:+'
+    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen.ecore:+'
+    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen.ecore.xtext:+'
+    xtextLanguages "org.eclipse.xtext:org.eclipse.xtext.ecore:${xtextVersion}"
+    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.mwe2.runtime:+'
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+configurations.each {
+    c -> c.resolutionStrategy.dependencySubstitution {
+        all { DependencySubstitution dependency ->
+            // xcore requires [3.2.0, 3.2.1) but there is only 3.2
+            if (dependency.requested.group == 'org.antlr') {
+                dependency.useTarget 'org.antlr:antlr-runtime:3.2'
+            }
+            // https://bugs.eclipse.org/bugs/show_bug.cgi?id=540757
+            if (dependency.requested.group == 'org.eclipse.emf') {
+                dependency.useTarget 'org.eclipse.emf:org.eclipse.emf.ecore:2.15.0'
+            }
+        }
+    }
+}
