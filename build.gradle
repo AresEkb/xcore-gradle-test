@@ -1,78 +1,94 @@
-plugins {
-    id "org.xtext.builder" version "2.0.3"
+buildscript {
+	repositories {
+		jcenter()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath 'org.xtext:xtext-gradle-plugin:2.0.2'
+	}
 }
 
+ext.xtextVersion = '2.16.0'
+ext.mwe2Version = '2.9.1.201705291010'
+
 repositories {
-    jcenter()
+	jcenter()
+	mavenCentral()
 }
 
 apply plugin: 'java'
+apply plugin: 'org.xtext.xtend'
+//apply from: "${rootDir}/gradle/source-layout.gradle"
+//apply from: "${rootDir}/gradle/maven-deployment.gradle"
+apply plugin: 'eclipse'
+//apply plugin: 'idea'
 
-sourceCompatibility = 1.8
+//group = 'org.xtext.example.mydsl'
+//version = '1.0.0-SNAPSHOT'
 
-ext {
-    xtextVersion = '2.16.0'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+configurations.all {
+	exclude group: 'asm'
+}
+
+
+dependencies {
+	compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
+	compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:1.1.100'
+	compile 'org.eclipse.emf:org.eclipse.emf.ecore:2.12.0'
+	compile 'org.eclipse.emf:org.eclipse.emf.common:2.12.0'
+	
+	xtextLanguages 'org.antlr:antlr-runtime:3.2'
+	xtextLanguages 'org.eclipse.emf:org.eclipse.emf.mwe2.runtime:2.9.1.201705291010'
+	xtextLanguages 'org.eclipse.emf:org.eclipse.emf.common:2.12.0'
+	xtextLanguages('org.eclipse.emf:org.eclipse.emf.ecore.xcore:1.3.1'){
+		exclude group: 'org.antlr', module: 'antlr-runtime'
+		exclude group: 'org.eclipse.xtext', module: 'org.eclipse.xtext'
+		exclude group: 'org.eclipse.xtext', module: 'org.eclipse.xtext.xbase'
+	}
+	
+	xtextLanguages 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:1.1.100'
+	xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen:2.11.0'
+	xtextLanguages 'org.eclipse.emf:org.eclipse.emf.ecore:2.12.0'
+	xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen.ecore:2.12.0'
+	xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen.ecore.xtext:1.2.0'
+	xtextLanguages "org.eclipse.xtext:org.eclipse.xtext.ecore:${xtextVersion}"
 }
 
 sourceSets {
-    main {
-        resources {
-            exclude '**/*.xcore'
-        }
-    }
+	main {
+		resources {
+			exclude '**/*.xcore'
+		}
+	}
 }
 
 xtext {
-    version = "${xtextVersion}"
-    languages {
-        ecore {
-            setup = 'org.eclipse.xtext.ecore.EcoreSupport'
-        }
-        //codegen {
-        //    setup = 'org.eclipse.emf.codegen.ecore.xtext.GenModelSupport'
-        //}
-        xcore {
-            setup = 'org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup'
-            generator.outlet.producesJava = true
-        }
-    }
-    sourceSets {
-        main {
-            srcDir 'src/main'
-            output {
-                dir(xtext.languages.xcore.generator.outlet, 'target/generated-sources/xcore')
-            }
-        }
-    }
-}
-
-dependencies {
-    compile "org.eclipse.xtext:org.eclipse.xtext:${xtextVersion}"
-    compile "org.eclipse.xtext:org.eclipse.xtext.xbase:${xtextVersion}"
-    compile 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:+'
-
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.ecore.xcore:+'
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.ecore.xcore.lib:+'
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen:+'
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen.ecore:+'
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.codegen.ecore.xtext:+'
-    xtextLanguages "org.eclipse.xtext:org.eclipse.xtext.ecore:${xtextVersion}"
-    xtextLanguages 'org.eclipse.emf:org.eclipse.emf.mwe2.runtime:+'
-
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-configurations.each {
-    c -> c.resolutionStrategy.dependencySubstitution {
-        all { DependencySubstitution dependency ->
-            // xcore requires [3.2.0, 3.2.1) but there is only 3.2
-            if (dependency.requested.group == 'org.antlr') {
-                dependency.useTarget 'org.antlr:antlr-runtime:3.2'
-            }
-            // https://bugs.eclipse.org/bugs/show_bug.cgi?id=540757
-            if (dependency.requested.group == 'org.eclipse.emf') {
-                dependency.useTarget 'org.eclipse.emf:org.eclipse.emf.ecore:2.15.0'
-            }
-        }
-    }
+	version = "${xtextVersion}"
+	languages {
+		ecore {
+			setup = 'org.eclipse.xtext.ecore.EcoreSupport'
+		}
+		codegen {
+			setup = 'org.eclipse.emf.codegen.ecore.xtext.GenModelSupport'
+		}
+		xcore {
+			setup = 'org.eclipse.emf.ecore.xcore.XcoreStandaloneSetup'
+			generator.outlet.producesJava = true
+			generator.outlet.cleanAutomatically = true
+		}
+	}
+	sourceSets {
+     	main {
+        	//you can add additional folders that are not Java source folders here
+        	srcDir 'src/'
+			output {
+				dir(xtext.languages.xcore.generator.outlets.DEFAULT_OUTPUT, 'build/xcore')
+			}
+		}
+	}
 }
