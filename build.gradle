@@ -6,12 +6,16 @@ buildscript {
 		}
 	}
 	dependencies {
-		classpath 'org.xtext:xtext-gradle-plugin:2.0.2'
+		classpath 'org.xtext:xtext-gradle-plugin:2.0.3'
 	}
 }
 
+plugins {
+    id "org.xtext.builder" version "2.0.3"
+}
+
 ext.xtextVersion = '2.16.0'
-ext.mwe2Version = '2.9.1.201705291010'
+ext.mwe2Version = '2.10.0.M2'
 
 repositories {
 	jcenter()
@@ -19,7 +23,7 @@ repositories {
 }
 
 apply plugin: 'java'
-apply plugin: 'org.xtext.xtend'
+//apply plugin: 'org.xtext.xtend'
 //apply from: "${rootDir}/gradle/source-layout.gradle"
 //apply from: "${rootDir}/gradle/maven-deployment.gradle"
 apply plugin: 'eclipse'
